@@ -7,10 +7,10 @@
 #                                                           #
 #############################################################
 
-cmake_minimum_required(VERSION 3.10.0)
+cmake_minimum_required(VERSION 3.12.4)
 project(direct_lidar_odometry)
 
-add_compile_options(-std=c++14)
+add_compile_options(-std=c++17)
 set(CMAKE_BUILD_TYPE "Release")
 
 find_package( PCL REQUIRED )
@@ -34,40 +34,20 @@ set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  std_msgs
-  sensor_msgs
-  geometry_msgs
-  pcl_ros
-  message_generation
-)
+find_package(rosidl_default_generators REQUIRED)
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(pcl_ros REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(dlo_msgs REQUIRED)
 
-add_service_files(
-  DIRECTORY srv
-  FILES
-  save_pcd.srv
-  save_traj.srv
-)
-
-generate_messages()
-
-catkin_package(
-  CATKIN_DEPENDS
-    roscpp
-    std_msgs
-    sensor_msgs
-    geometry_msgs
-    pcl_ros
-  INCLUDE_DIRS
-    include
-  LIBRARIES
-    ${PROJECT_NAME}
-    nano_gicp
-    nanoflann
-)
-
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include)
+include_directories(SYSTEM)
+include_directories(${PCL_INCLUDE_DIRS})
+include_directories(${EIGEN3_INCLUDE_DIR})
 
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 file(WRITE ${CMAKE_BINARY_DIR}/test_cpuid.cpp "#include <cpuid.h>")
@@ -83,6 +63,7 @@ add_library(nanoflann STATIC
 )
 target_link_libraries(nanoflann ${PCL_LIBRARIES})
 target_include_directories(nanoflann PUBLIC include ${PCL_INCLUDE_DIRS})
+ament_target_dependencies(nanoflann rclcpp std_msgs sensor_msgs geometry_msgs pcl_ros nav_msgs)
 
 # NanoGICP
 add_library(nano_gicp STATIC
@@ -91,16 +72,29 @@ add_library(nano_gicp STATIC
 )
 target_link_libraries(nano_gicp ${PCL_LIBRARIES} ${OpenMP_LIBS} nanoflann)
 target_include_directories(nano_gicp PUBLIC include ${PCL_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
+ament_target_dependencies(nano_gicp rclcpp std_msgs sensor_msgs geometry_msgs pcl_ros nav_msgs)
 
-# Odometry Node
+## Odometry Node
 add_executable(dlo_odom_node src/dlo/odom_node.cc src/dlo/odom.cc)
-add_dependencies(dlo_odom_node ${catkin_EXPORTED_TARGETS})
 target_compile_options(dlo_odom_node PRIVATE ${OpenMP_FLAGS})
-target_link_libraries(dlo_odom_node ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenMP_LIBS} Threads::Threads nano_gicp)
+target_link_libraries(dlo_odom_node ${PCL_LIBRARIES} ${OpenMP_LIBS} Threads::Threads nano_gicp)
+ament_target_dependencies(dlo_odom_node rclcpp std_msgs sensor_msgs geometry_msgs pcl_ros nav_msgs dlo_msgs)
 
-# Mapping Node
+## Mapping Node
 add_executable (dlo_map_node src/dlo/map_node.cc src/dlo/map.cc)
-add_dependencies(dlo_map_node ${catkin_EXPORTED_TARGETS})
 target_compile_options(dlo_map_node PRIVATE ${OpenMP_FLAGS})
-target_link_libraries(dlo_map_node ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenMP_LIBS} Threads::Threads)
+target_link_libraries(dlo_map_node ${PCL_LIBRARIES} ${OpenMP_LIBS} Threads::Threads)
+ament_target_dependencies(dlo_map_node rclcpp std_msgs sensor_msgs geometry_msgs pcl_ros nav_msgs dlo_msgs)
 
+install (TARGETS dlo_odom_node dlo_map_node
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install (DIRECTORY cfg launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
+ament_export_include_directories(include)
+ament_export_libraries(${PROJECT_NAME} nano_gicp nanoflann)
+ament_export_dependencies(rclcpp std_msgs sensor_msgs geometry_msgs pcl_ros nav_msgs dlo_msgs)
+ament_package()

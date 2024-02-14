@@ -7,28 +7,14 @@
  *
  ***********************************************************/
 
-#include "dlo/odom.h"
+#include "dlo/map.h"
 
-void controlC(int sig) {
-
-  dlo::OdomNode::abort();
-
-}
 
 int main(int argc, char** argv) {
+  rclcpp::init(argc, argv);
 
-  ros::init(argc, argv, "dlo_odom_node");
-  ros::NodeHandle nh("~");
-
-  signal(SIGTERM, controlC);
-  sleep(0.5);
-
-  dlo::OdomNode node(nh);
-  ros::AsyncSpinner spinner(0);
-  spinner.start();
-  node.start();
-  ros::waitForShutdown();
+  auto node = std::make_shared<dlo::MapNode>("map_node");
+  rclcpp::spin(node);
 
   return 0;
-
 }

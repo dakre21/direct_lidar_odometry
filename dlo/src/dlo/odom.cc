@@ -173,73 +173,116 @@ dlo::OdomNode::OdomNode(const std::string &node_name) : rclcpp::Node(node_name),
 void dlo::OdomNode::getParams()
 {
   // Version
-  this->version_ = this->declare_parameter<std::string>("dlo/version", "0.0.0");
+  this->declare_parameter<std::string>("dlo/version", "0.0.0");
+  this->version_ = this->get_parameter("dlo/version").as_string();
 
   // Frames
-  this->odom_frame = this->declare_parameter<std::string>("dlo/odomNode/odom_frame", "/odom");
-  this->child_frame = this->declare_parameter<std::string>("dlo/odomNode/child_frame", "/base_link");
+  this->declare_parameter<std::string>("dlo/odomNode/odom_frame", "/odom");
+  this->declare_parameter<std::string>("dlo/odomNode/child_frame", "/base_link");
+  this->odom_frame = this->get_parameter("dlo/odomNode/odom_frame").as_string();
+  this->child_frame = this->get_parameter("dlo/odomNode/child_frame").as_string();
 
   // Gravity alignment
-  this->gravity_align_ = this->declare_parameter<bool>("dlo/gravityAlign", false);
+  this->declare_parameter<bool>("dlo/gravityAlign", false);
+  this->gravity_align_ = this->get_parameter("dlo/gravityAlign").as_bool();
+  std::cout << "Gravity align: " << this->gravity_align_ << std::endl;
 
   // Keyframe Threshold
-  this->keyframe_thresh_dist_ = this->declare_parameter<double>("dlo/odomNode/keyframe/threshD", 0.1);
-  this->keyframe_thresh_rot_ = this->declare_parameter<double>("dlo/odomNode/keyframe/threshR", 1.0);
+  this->declare_parameter<double>("dlo/odomNode/keyframe/threshD", 0.1);
+  this->declare_parameter<double>("dlo/odomNode/keyframe/threshR", 1.0);
+  this->keyframe_thresh_dist_ = this->get_parameter("dlo/odomNode/keyframe/threshD").as_double();
+  this->keyframe_thresh_rot_ = this->get_parameter("dlo/odomNode/keyframe/threshR").as_double();
 
   // Submap
-  this->submap_knn_ = this->declare_parameter<int>("dlo/odomNode/submap/keyframe/knn", 10);
-  this->submap_kcv_ = this->declare_parameter<int>("dlo/odomNode/submap/keyframe/kcv", 10);
-  this->submap_kcc_ = this->declare_parameter<int>("dlo/odomNode/submap/keyframe/kcc", 10);
+  this->declare_parameter<int>("dlo/odomNode/submap/keyframe/knn", 10);
+  this->declare_parameter<int>("dlo/odomNode/submap/keyframe/kcv", 10);
+  this->declare_parameter<int>("dlo/odomNode/submap/keyframe/kcc", 10);
+  this->submap_knn_ = this->get_parameter("dlo/odomNode/submap/keyframe/knn").as_int();
+  this->submap_kcv_ = this->get_parameter("dlo/odomNode/submap/keyframe/kcv").as_int();
+  this->submap_kcc_ = this->get_parameter("dlo/odomNode/submap/keyframe/kcc").as_int();
 
   // Initial Position
-  this->initial_pose_use_ = this->declare_parameter<bool>("dlo/odomNode/initialPose/use", false);
+  this->declare_parameter<bool>("dlo/odomNode/initialPose/use", false);
+  this->initial_pose_use_ = this->get_parameter("dlo/odomNode/initialPose/use").as_bool();
 
   double px, py, pz, qx, qy, qz, qw;
-  px = this->declare_parameter<double>("dlo/odomNode/initialPose/position/x", 0.0);
-  py = this->declare_parameter<double>("dlo/odomNode/initialPose/position/y", 0.0);
-  pz = this->declare_parameter<double>("dlo/odomNode/initialPose/position/z", 0.0);
-  qx = this->declare_parameter<double>("dlo/odomNode/initialPose/orientation/x", 0.0);
-  qy = this->declare_parameter<double>("dlo/odomNode/initialPose/orientation/y", 0.0);
-  qz = this->declare_parameter<double>("dlo/odomNode/initialPose/orientation/z", 0.0);
-  qw = this->declare_parameter<double>("dlo/odomNode/initialPose/orientation/w", 1.0);
+  this->declare_parameter<double>("dlo/odomNode/initialPose/position/x", 0.0);
+  this->declare_parameter<double>("dlo/odomNode/initialPose/position/y", 0.0);
+  this->declare_parameter<double>("dlo/odomNode/initialPose/position/z", 0.0);
+  this->declare_parameter<double>("dlo/odomNode/initialPose/orientation/x", 0.0);
+  this->declare_parameter<double>("dlo/odomNode/initialPose/orientation/y", 0.0);
+  this->declare_parameter<double>("dlo/odomNode/initialPose/orientation/z", 0.0);
+  this->declare_parameter<double>("dlo/odomNode/initialPose/orientation/w", 1.0);
+  px = this->get_parameter("dlo/odomNode/initialPose/position/x").as_double();
+  py = this->get_parameter("dlo/odomNode/initialPose/position/y").as_double();
+  pz = this->get_parameter("dlo/odomNode/initialPose/position/z").as_double();
+  qx = this->get_parameter("dlo/odomNode/initialPose/orientation/x").as_double();
+  qy = this->get_parameter("dlo/odomNode/initialPose/orientation/y").as_double();
+  qz = this->get_parameter("dlo/odomNode/initialPose/orientation/z").as_double();
+  qw = this->get_parameter("dlo/odomNode/initialPose/orientation/w").as_double();
 
   this->initial_position_ = Eigen::Vector3f(px, py, pz);
   this->initial_orientation_ = Eigen::Quaternionf(qw, qx, qy, qz);
 
   // Crop Box Filter
-  this->crop_use_ = this->declare_parameter<bool>("dlo/odomNode/preprocessing/cropBoxFilter/use", false);
-  this->crop_size_ = this->declare_parameter<double>("dlo/odomNode/preprocessing/cropBoxFilter/size", 1.0);
+  this->declare_parameter<bool>("dlo/odomNode/preprocessing/cropBoxFilter/use", false);
+  this->declare_parameter<double>("dlo/odomNode/preprocessing/cropBoxFilter/size", 1.0);
+  this->crop_use_ = this->get_parameter("dlo/odomNode/preprocessing/cropBoxFilter/use").as_bool();
+  this->crop_size_ = this->get_parameter("dlo/odomNode/preprocessing/cropBoxFilter/size").as_double();
 
   // Voxel Grid Filter
-  this->vf_scan_use_ = this->declare_parameter<bool>("dlo/odomNode/preprocessing/voxelFilter/scan/use", true);
-  this->vf_scan_res_ = this->declare_parameter<double>("dlo/odomNode/preprocessing/voxelFilter/scan/res", 0.05);
-  this->vf_submap_use_ = this->declare_parameter<bool>("dlo/odomNode/preprocessing/voxelFilter/submap/use", false);
-  this->vf_submap_res_ = this->declare_parameter<double>("dlo/odomNode/preprocessing/voxelFilter/submap/res", 0.1);
+  this->declare_parameter<bool>("dlo/odomNode/preprocessing/voxelFilter/scan/use", true);
+  this->declare_parameter<double>("dlo/odomNode/preprocessing/voxelFilter/scan/res", 0.05);
+  this->declare_parameter<bool>("dlo/odomNode/preprocessing/voxelFilter/submap/use", false);
+  this->declare_parameter<double>("dlo/odomNode/preprocessing/voxelFilter/submap/res", 0.1);
+  this->vf_scan_use_ = this->get_parameter("dlo/odomNode/preprocessing/voxelFilter/scan/use").as_bool();
+  this->vf_scan_res_ = this->get_parameter("dlo/odomNode/preprocessing/voxelFilter/scan/res").as_double();
+  this->vf_submap_use_ = this->get_parameter("dlo/odomNode/preprocessing/voxelFilter/submap/use").as_bool();
+  this->vf_submap_res_ = this->get_parameter("dlo/odomNode/preprocessing/voxelFilter/submap/res").as_double();
 
   // Adaptive Parameters
-  this->adaptive_params_use_ = this->declare_parameter<bool>("dlo/adaptiveParams/use", false);
+  this->declare_parameter<bool>("dlo/adaptiveParams/use", false);
+  this->adaptive_params_use_ = this->get_parameter("dlo/adaptiveParams/use").as_bool();
 
   // IMU
-  this->imu_use_ = this->declare_parameter<bool>("dlo/imu", false);
-  this->imu_calib_time_ = this->declare_parameter<int>("dlo/odomNode/imu/calibTime", 3);
-  this->imu_buffer_size_ = this->declare_parameter<int>("dlo/imu/bufferSize", 2000);
+  this->declare_parameter<bool>("dlo/imu", false);
+  this->declare_parameter<int>("dlo/odomNode/imu/calibTime", 3);
+  this->declare_parameter<int>("dlo/imu/bufferSize", 2000);
+  this->imu_use_ = this->get_parameter("dlo/imu").as_bool();
+  this->imu_calib_time_ = this->get_parameter("dlo/odomNode/imu/calibTime").as_int();
+  this->imu_buffer_size_ = this->get_parameter("dlo/imu/bufferSize").as_int();
 
   // GICP
-  this->gicp_min_num_points_ = this->declare_parameter<int>("dlo/odomNode/gicp/minNumPoints", 100);
-  this->gicps2s_k_correspondences_ = this->declare_parameter<int>("dlo/odomNode/gicp/s2s/kCorrespondences", 20);
-  this->gicps2s_max_corr_dist_ = this->declare_parameter<double>("dlo/odomNode/gicp/s2s/maxCorrespondenceDistance", std::sqrt(std::numeric_limits<double>::max()));
-  this->gicps2s_max_iter_ = this->declare_parameter<int>("dlo/odomNode/gicp/s2s/maxIterations", 64);
-  this->gicps2s_transformation_ep_ = this->declare_parameter<double>("dlo/odomNode/gicp/s2s/transformationEpsilon", 0.0005);
-  this->gicps2s_euclidean_fitness_ep_ = this->declare_parameter<double>("dlo/odomNode/gicp/s2s/euclideanFitnessEpsilon", -std::numeric_limits<double>::max());
-  this->gicps2s_ransac_iter_ = this->declare_parameter<int>("dlo/odomNode/gicp/s2s/ransac/iterations", 0);
-  this->gicps2s_ransac_inlier_thresh_ = this->declare_parameter<double>("dlo/odomNode/gicp/s2s/ransac/outlierRejectionThresh", 0.05);
-  this->gicps2m_k_correspondences_ = this->declare_parameter<int>("dlo/odomNode/gicp/s2m/kCorrespondences", 20);
-  this->gicps2m_max_corr_dist_ = this->declare_parameter<double>("dlo/odomNode/gicp/s2m/maxCorrespondenceDistance", std::sqrt(std::numeric_limits<double>::max()));
-  this->gicps2m_max_iter_ = this->declare_parameter<int>("dlo/odomNode/gicp/s2m/maxIterations", 64);
-  this->gicps2m_transformation_ep_ = this->declare_parameter<double>("dlo/odomNode/gicp/s2m/transformationEpsilon", 0.0005);
-  this->gicps2m_euclidean_fitness_ep_ = this->declare_parameter<double>("dlo/odomNode/gicp/s2m/euclideanFitnessEpsilon", -std::numeric_limits<double>::max());
-  this->gicps2m_ransac_iter_ = this->declare_parameter<int>("dlo/odomNode/gicp/s2m/ransac/iterations", 0);
-  this->gicps2m_ransac_inlier_thresh_ = this->declare_parameter<double>("dlo/odomNode/gicp/s2m/ransac/outlierRejectionThresh", 0.05);
+  this->declare_parameter<int>("dlo/odomNode/gicp/minNumPoints", 100);
+  this->declare_parameter<int>("dlo/odomNode/gicp/s2s/kCorrespondences", 20);
+  this->declare_parameter<double>("dlo/odomNode/gicp/s2s/maxCorrespondenceDistance", std::sqrt(std::numeric_limits<double>::max()));
+  this->declare_parameter<int>("dlo/odomNode/gicp/s2s/maxIterations", 64);
+  this->declare_parameter<double>("dlo/odomNode/gicp/s2s/transformationEpsilon", 0.0005);
+  this->declare_parameter<double>("dlo/odomNode/gicp/s2s/euclideanFitnessEpsilon", -std::numeric_limits<double>::max());
+  this->declare_parameter<int>("dlo/odomNode/gicp/s2s/ransac/iterations", 0);
+  this->declare_parameter<double>("dlo/odomNode/gicp/s2s/ransac/outlierRejectionThresh", 0.05);
+  this->declare_parameter<int>("dlo/odomNode/gicp/s2m/kCorrespondences", 20);
+  this->declare_parameter<double>("dlo/odomNode/gicp/s2m/maxCorrespondenceDistance", std::sqrt(std::numeric_limits<double>::max()));
+  this->declare_parameter<int>("dlo/odomNode/gicp/s2m/maxIterations", 64);
+  this->declare_parameter<double>("dlo/odomNode/gicp/s2m/transformationEpsilon", 0.0005);
+  this->declare_parameter<double>("dlo/odomNode/gicp/s2m/euclideanFitnessEpsilon", -std::numeric_limits<double>::max());
+  this->declare_parameter<int>("dlo/odomNode/gicp/s2m/ransac/iterations", 0);
+  this->declare_parameter<double>("dlo/odomNode/gicp/s2m/ransac/outlierRejectionThresh", 0.05);
+  this->gicp_min_num_points_ = this->get_parameter("dlo/odomNode/gicp/minNumPoints").as_int();
+  this->gicps2s_k_correspondences_ = this->get_parameter("dlo/odomNode/gicp/s2s/kCorrespondences").as_int();
+  this->gicps2s_max_corr_dist_ = this->get_parameter("dlo/odomNode/gicp/s2s/maxCorrespondenceDistance").as_double();
+  this->gicps2s_max_iter_ = this->get_parameter("dlo/odomNode/gicp/s2s/maxIterations").as_int();
+  this->gicps2s_transformation_ep_ = this->get_parameter("dlo/odomNode/gicp/s2s/transformationEpsilon").as_double();
+  this->gicps2s_euclidean_fitness_ep_ = this->get_parameter("dlo/odomNode/gicp/s2s/euclideanFitnessEpsilon").as_double();
+  this->gicps2s_ransac_iter_ = this->get_parameter("dlo/odomNode/gicp/s2s/ransac/iterations").as_int();
+  this->gicps2s_ransac_inlier_thresh_ = this->get_parameter("dlo/odomNode/gicp/s2s/ransac/outlierRejectionThresh").as_double();
+  this->gicps2m_k_correspondences_ = this->get_parameter("dlo/odomNode/gicp/s2m/kCorrespondences").as_int();
+  this->gicps2m_max_corr_dist_ = this->get_parameter("dlo/odomNode/gicp/s2m/maxCorrespondenceDistance").as_double();
+  this->gicps2m_max_iter_ = this->get_parameter("dlo/odomNode/gicp/s2m/maxIterations").as_int();
+  this->gicps2m_transformation_ep_ = this->get_parameter("dlo/odomNode/gicp/s2m/transformationEpsilon").as_double();
+  this->gicps2m_euclidean_fitness_ep_ = this->get_parameter("dlo/odomNode/gicp/s2m/euclideanFitnessEpsilon").as_double();
+  this->gicps2m_ransac_iter_ = this->get_parameter("dlo/odomNode/gicp/s2m/ransac/iterations").as_int();
+  this->gicps2m_ransac_inlier_thresh_ = this->get_parameter("dlo/odomNode/gicp/s2m/ransac/outlierRejectionThresh").as_double();
 }
 
 /**

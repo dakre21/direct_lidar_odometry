@@ -40,10 +40,15 @@ dlo::MapNode::MapNode(const std::string &node_name) : rclcpp::Node(node_name)
 
 void dlo::MapNode::getParams()
 {
-  this->odom_frame = this->declare_parameter<std::string>("odom_frame", "odom");
-  this->publish_full_map = this->declare_parameter<bool>("publishFullMap", true);
-  this->publish_freq = this->declare_parameter<double>("publishFreq", 1.0);
-  this->leaf_size = this->declare_parameter<double>("leafSize", 0.5);
+  this->declare_parameter<std::string>("odom_frame", "odom");
+  this->declare_parameter<bool>("publishFullMap", true);
+  this->declare_parameter<double>("publishFreq", 1.0);
+  this->declare_parameter<double>("leafSize", 0.5);
+
+  this->odom_frame = this->get_parameter("odom_frame").as_string();
+  this->publish_full_map = this->get_parameter("publishFullMap").as_bool();
+  this->publish_freq = this->get_parameter("publishFreq").as_double();
+  this->leaf_size = this->get_parameter("leafSize").as_double();
 }
 
 /**

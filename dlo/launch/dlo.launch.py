@@ -18,10 +18,10 @@ def generate_launch_description():
         namespace=[robot_namespace],
         name='dlo_odom',
         output='screen',
-        parameters=[{
-            'dlo_param_file': dlo_package_path + '/cfg/dlo.yaml',
-            'params_file': dlo_package_path + '/cfg/params.yaml'
-        }],
+        parameters=[
+            dlo_package_path + '/cfg/dlo.yaml',
+            dlo_package_path + '/cfg/params.yaml'
+        ],
         remappings=[
             ('pointcloud', pointcloud_topic),
             ('imu', imu_topic),
@@ -38,9 +38,9 @@ def generate_launch_description():
         namespace=[robot_namespace],
         name='dlo_map',
         output='screen',
-        parameters=[{
-            'dlo_param_file': dlo_package_path + '/cfg/dlo.yaml'
-        }],
+        parameters=[
+            dlo_package_path + '/cfg/dlo.yaml'
+        ],
         remappings=[
             ('keyframes', 'dlo/odom_node/pointcloud/keyframe')
         ]

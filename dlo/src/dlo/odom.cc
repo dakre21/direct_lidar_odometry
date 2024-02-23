@@ -185,7 +185,6 @@ void dlo::OdomNode::getParams()
   // Gravity alignment
   this->declare_parameter<bool>("dlo/gravityAlign", false);
   this->gravity_align_ = this->get_parameter("dlo/gravityAlign").as_bool();
-  std::cout << "Gravity align: " << this->gravity_align_ << std::endl;
 
   // Keyframe Threshold
   this->declare_parameter<double>("dlo/odomNode/keyframe/threshD", 0.1);
@@ -241,8 +240,8 @@ void dlo::OdomNode::getParams()
   this->vf_submap_res_ = this->get_parameter("dlo/odomNode/preprocessing/voxelFilter/submap/res").as_double();
 
   // Adaptive Parameters
-  this->declare_parameter<bool>("dlo/adaptiveParams/use", false);
-  this->adaptive_params_use_ = this->get_parameter("dlo/adaptiveParams/use").as_bool();
+  this->declare_parameter<bool>("dlo/adaptiveParams", false);
+  this->adaptive_params_use_ = this->get_parameter("dlo/adaptiveParams").as_bool();
 
   // IMU
   this->declare_parameter<bool>("dlo/imu", false);

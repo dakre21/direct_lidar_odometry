@@ -13,7 +13,7 @@
 int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
 
-  auto node = std::make_shared<dlo::MapNode>("map_node");
+  auto node = std::make_shared<dlo::MapNode>("dlo_map");
   rclcpp::spin(node);
 
   return 0;
